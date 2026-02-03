@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ማርክ ሊስት ህፃናት ለ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        // Global variables
+        let students = [];
+        let departments = [];
+        let searchQuery = '';
+        let isSearching = false;
+
+        // Predefined student names
+        const predefinedStudents = [
+           {"name": "ሀሴት ጥላሁን", "gender": "female"},
+    {"name": "ሀብታሙ ሲሳይ", "gender": "male"},
+    {"name": "ሀይመት አብርሃም", "gender": "female"},
+    {"name": "ሀና ቴዎድሮስ", "gender": "female"},
+    {"name": "ህሊና አሳምነው", "gender": "female"},
+    {"name": "ህይወት መታገስ", "gender": "female"},
+    {"name": "መክሊት ሙሉዓለም", "gender": "female"},
+    {"name": "መክሊት ይድነቃቸው", "gender": "female"},
+    {"name": "መክሊት አስፋው", "gender": "female"},
+    {"name": "ሚኪያስ ዋለ", "gender": "male"},
+    {"name": "ማርካን ዮናስ", "gender": "female"},
+    {"name": "ማርኮን ደረጀ", "gender": "male"},
+    {"name": "ማክቤል ቢልልኝ", "gender": "male"},
+    {"name": "ሜላት ወንዶሰን", "gender": "female"},
+    {"name": "ሜራክል ዘነበ", "gender": "female"},
+    {"name": "ምዕራግ ፃድቁ", "gender": "male"},
+    {"name": "ራኬብ አለማየሁ", "gender": "female"},
+    {"name": "ሰላማዊት ዘለቀ", "gender": "female"},
+    {"name": "ሰላም ፍቃዱ", "gender": "female"},
+    {"name": "ሰመሀል ተክሊት", "gender": "female"},
+    {"name": "ሳሙኤል ምትኩ", "gender": "male"},
+    {"name": "ሳሙኤል አስታውስ", "gender": "male"},
+    {"name": "ሳምራዊት ሙሉጌታ", "gender": "female"},
+    {"name": "ሳሮን አሸናፊ", "gender": "female"},
+    {"name": "ሳምሶን ተሾመ", "gender": "male"},
+    {"name": "ቃለአብ ገብረ ፃድቅ", "gender": "male"},
+    {"name": "ቃልኪዳን ዘመዴ", "gender": "female"},
+    {"name": "ቅዱስ አስቻለው", "gender": "male"},
+    {"name": "ቅድስት ተሾመ", "gender": "female"},
+    {"name": "በረከት ተስፋዬ", "gender": "male"},
+    {"name": "በረከት ከበደ", "gender": "male"},
+    {"name": "በእምነት መንግሥቱ", "gender": "female"},
+    {"name": "በእምነት ደረጀ", "gender": "female"},
+    {"name": "በፀሎት ደረጀ", "gender": "female"},
+    {"name": "ቢታንያ ያሬድ", "gender": "female"},
+    {"name": "ቢኒያም ታደሰ", "gender": "male"},
+    {"name": "ባርኮን ኖቤል", "gender": "male"},
+    {"name": "ቤተል ዳንኤል", "gender": "female"},
+    {"name": "ቤትሜሎን ፍቅሩ", "gender": "female"},
+    {"name": "ብሩክ ስለሺ", "gender": "male"},
+    {"name": "ትዝታ ስኳሬ", "gender": "female"},
+    {"name": "ናርዶስ መለሰ", "gender": "female"},
+    {"name": "ናርዶስ አለማየሁ", "gender": "female"},
+    {"name": "ናኦድ ኪሮስ", "gender": "male"},
+    {"name": "ኖሀሚን አዳነ", "gender": "female"},
+    {"name": "አልአዛር አለምሰገድ", "gender": "male"},
+    {"name": "አማኑኤል አግዘው", "gender": "male"},
+    {"name": "አሜን ሙላት", "gender": "male"},
+    {"name": "አሜን አብዲ", "gender": "male"},
+    {"name": "አርሴማ በላይነህ", "gender": "female"},
+    {"name": "አርሴማ ያሬድ", "gender": "female"},
+    {"name": "አርሴማ ወንዱ", "gender": "female"},
+    {"name": "አርሴማ ፋንታሁን", "gender": "female"},
+    {"name": "አርሴማዊት ሳህለ", "gender": "female"},
+    {"name": "አቢጊያ በላይ", "gender": "female"},
+    {"name": "አቤም ይርጋለም", "gender": "male"},
+    {"name": "አቤነዘር አሰፋ", "gender": "male"},
+    {"name": "አብሳላት ሳህለ ማርያም", "gender": "female"},
+    {"name": "አብሳላት ደሳለኝ", "gender": "female"},
+    {"name": "አኪያ አስራት", "gender": "male"},
+    {"name": "አዛርኤል አበበ", "gender": "male"},
+    {"name": "ኤዱኤል አማረ", "gender": "female"},
+    {"name": "እያሱ እንዳልካቸው", "gender": "male"},
+    {"name": "እዮብ ከተማ", "gender": "male"},
+    {"name": "እዮአብ ይርጋለም", "gender": "male"},
+    {"name": "እድላዊት አለምእሸት", "gender": "female"},
+    {"name": "ኪሩቤል አስራት", "gender": "male"},
+    {"name": "ካሌብ ሚኪያስ", "gender": "male"},
+    {"name": "ኬብሮን ሰይፉ", "gender": "female"},
+    {"name": "ኬና ተስፋዬ", "gender": "male"},
+    {"name": "ክርስቲያን ተገኝ", "gender": "female"},
+    {"name": "የሚካኤል አበበ", "gender": "male"},
+    {"name": "የአብሥራ ቴዎድሮስ", "gender": "female"},
+    {"name": "የአብስራ አባይ", "gender": "female"},
+    {"name": "የአብስራ ዘርጋው", "gender": "male"},
+    {"name": "ያኔት ታሪኩ", "gender": "female"},
+    {"name": "ዮሐንስ ለገሰ", "gender": "male"},
+    {"name": "ዮሐንስ ደሳለኝ", "gender": "male"},
+    {"name": "ዮርዳኖስ ታደሰ", "gender": "female"},
+    {"name": "ዳግም ምስጋና", "gender": "male"},
+    {"name": "ገሊላ ለይኩን", "gender": "female"},
+    {"name": "ገላን ተሾመ", "gender": "female"},
+    {"name": "ፅዮን አስራት", "gender": "female"},
+    {"name": "ፅዮን ፈቀረኝ", "gender": "female"},
+    {"name": "ፅናት በላቸው", "gender": "female"},
+    {"name": "ፌኔት ወንዱ", "gender": "female"},
+    {"name": "ፍሬህይወት ቢተው", "gender": "female"},
+    {"name": "ፍቅረአብ ደሳለኝ", "gender": "male"}
+        ];
+
+        // Initialize the application
+        function initializeApp() {
+            loadFromLocalStorage();
+            
+            // Automatically add predefined students if no students exist
+            if (students.length === 0 && predefinedStudents.length > 0) {
+                addMultipleStudents(predefinedStudents);
+                showMessage(`${predefinedStudents.length} ተማሪዎች በተሳካ ሁኔታ ተጨምረዋል!`, 'success');
+            }
+            
+            initializeSearch();
+            renderLeaderboard();
+            renderConfigView();
+            updateStudentStats();
+        }
+
+        // Local Storage Functions
+        function loadFromLocalStorage() {
+            // Load departments
+            const savedDepartments = localStorage.getItem('departments');
+            if (savedDepartments) {
+                departments = JSON.parse(savedDepartments);
+            } else {
+                // Default departments
+                departments = [
+                    { id: '1', name: 'የመፅሀፍ ቅዱስ ጥናት' },
+                    { id: '2', name: 'የ ቤተክርስቲያን ታሪክ' },
+                    { id: '3', name: 'ግዕዝ' },
+                    { id: '4', name: 'ሥረዓተ ቤተክርስቲያን' },
+                    { id: '5', name: 'ክርስቲያናዊ ሥነ ᝅግባር' },
+                    { id: '6', name: 'መሰረተ ሀይማኖት' }
+                ];
+                localStorage.setItem('departments', JSON.stringify(departments));
+            }
+
+            // Load students
+            const savedStudents = localStorage.getItem('students');
+            if (savedStudents) {
+                students = JSON.parse(savedStudents);
+            } else {
+                students = [];
+                localStorage.setItem('students', JSON.stringify([]));
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('departments', JSON.stringify(departments));
+            updateStudentStats();
+        }
+
+        // Update student statistics
+        function updateStudentStats() {
+            const totalStudents = students.length;
+            const maleCount = students.filter(s => s.gender === 'male').length;
+            const femaleCount = students.filter(s => s.gender === 'female').length;
+            
+            // Calculate pass/fail/not study statistics
+            let passCount = 0;
+            let failCount = 0;
+            let notStudyCount = 0;
+            
+            students.forEach(student => {
+                let totalScore = 0;
+                let hasAnyScore = false;
+                let allZero = true;
+                
+                departments.forEach(dept => {
+                    const score = student.scores[dept.id];
+                    if (score !== undefined) {
+                        hasAnyScore = true;
+                        if (score > 0) {
+                            allZero = false;
+                        }
+                        totalScore += score;
+                    }
+                });
+                
+                if (!hasAnyScore) {
+                    notStudyCount++;
+                } else if (allZero) {
+                    notStudyCount++;
+                } else {
+                    const average = totalScore / departments.length;
+                    if (average >= 50) {
+                        passCount++;
+                    } else {
+                        failCount++;
+                    }
+                }
+            });
+            
+            // Update the info card
+            const statsContainer = document.getElementById('student-stats-container');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">ጠቅላላ ተማሪዎች</span>
+                            <span class="text-xl font-bold text-blue-600">${totalStudents}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">ወንዶች</span>
+                            <span class="text-lg font-semibold text-blue-500">${maleCount}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">ሴቶች</span>
+                            <span class="text-lg font-semibold text-pink-500">${femaleCount}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">ያለፈ</span>
+                            <span class="text-lg font-semibold text-green-500">${passCount}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">የወደቅ</span>
+                            <span class="text-lg font-semibold text-red-500">${failCount}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">ምንም አልተማረም</span>
+                            <span class="text-lg font-semibold text-gray-500">${notStudyCount}</span>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <p class="text-sm text-gray-500 text-center">
+                            32 ተማሪዎች በራስሰር ተጨምረዋል
+                        </p>
+                    </div>
+                `;
+            }
+            
+            updateSearchResultsCount();
+        }
+
+        // Search Functions
+        function initializeSearch() {
+            const leaderboardContainer = document.getElementById('leaderboard-container');
+            const searchHTML = `
+                <div class="mb-4">
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex-1 relative">
+                            <input 
+                                type="text" 
+                                id="student-search-input" 
+                                placeholder=" ተማሪ ስም ፈልግ..." 
+                                class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                oninput="handleSearch(this.value)"
+                            >
+                            <button 
+                                onclick="clearSearch()" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                                id="clear-search-btn"
+                                style="display: none;"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-500" id="search-results-count">
+                            ${students.length} ተማሪዎች
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const existingSearch = document.getElementById('search-container');
+            if (existingSearch) {
+                existingSearch.remove();
+            }
+            
+            const searchContainer = document.createElement('div');
+            searchContainer.id = 'search-container';
+            searchContainer.innerHTML = searchHTML;
+            leaderboardContainer.parentNode.insertBefore(searchContainer, leaderboardContainer);
+        }
+
+        function handleSearch(query) {
+            searchQuery = query.trim().toLowerCase();
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            
+            if (searchQuery) {
+                clearSearchBtn.style.display = 'block';
+                isSearching = true;
+            } else {
+                clearSearchBtn.style.display = 'none';
+                isSearching = false;
+            }
+            
+            renderLeaderboard();
+            updateSearchResultsCount();
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('student-search-input');
+            searchInput.value = '';
+            searchQuery = '';
+            isSearching = false;
+            document.getElementById('clear-search-btn').style.display = 'none';
+            renderLeaderboard();
+            updateSearchResultsCount();
+        }
+
+        function filterStudents() {
+            if (!searchQuery) return students;
+            
+            return students.filter(student => 
+                student.name.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        function updateSearchResultsCount() {
+            const resultsCountElement = document.getElementById('search-results-count');
+            const filteredStudents = filterStudents();
+            
+            if (isSearching) {
+                resultsCountElement.innerHTML = `
+                    <span class="text-blue-600 font-semibold">${filteredStudents.length}</span> 
+                    ከ <span class="font-semibold">${students.length}</span> ተማሪዎች ተገኝተዋል
+                    ${searchQuery ? `ለ "<span class="text-blue-600">${searchQuery}</span>"` : ''}
+                `;
+            } else {
+                resultsCountElement.textContent = `${students.length} ተማሪዎች`;
+            }
+        }
+
+        // Student Management
+        function addMultipleStudents(studentList) {
+            const newStudents = studentList.map(student => ({
+                id: Date.now().toString() + Math.random(),
+                name: student.name,
+                gender: student.gender,
+                scores: {},
+                createdAt: new Date()
+            }));
+            
+            students.push(...newStudents);
+            saveToLocalStorage();
+            renderLeaderboard();
+        }
+
+        function updateStudentMarks(studentId, newName, newScores) {
+            const studentIndex = students.findIndex(s => s.id === studentId);
+            if (studentIndex !== -1) {
+                students[studentIndex].name = newName;
+                students[studentIndex].scores = newScores;
+                students[studentIndex].updatedAt = new Date();
+                saveToLocalStorage();
+                showMessage(`የተማሪ ${newName} ውጤቶች በተሳካ ሁኔታ ተሻሽለዋል።`, 'success');
+                renderLeaderboard();
+            }
+        }
+
+        function deleteStudent(studentId) {
+            students = students.filter(student => student.id !== studentId);
+            saveToLocalStorage();
+            showMessage("ተማሪ በተሳካ ሁኔታ ተሰርዟል።", 'success');
+            renderLeaderboard();
+        }
+
+        function deleteAllStudents() {
+            showConfirmationModal(
+                `እርግጠኛ ነህ ሁሉንም ተማሪዎች ማስወገድ ትፈልጋለህ? ይህ እርምጃ ሊመለስ አይችልም።`,
+                () => {
+                    students = [];
+                    saveToLocalStorage();
+                    showMessage(`ሁሉም ተማሪዎች ተሰርዘዋል።`, 'success');
+                    renderLeaderboard();
+                }
+            );
+        }
+
+        // EDIT STUDENT MODAL FUNCTION
+        function showEditStudentModal(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) {
+                showMessage("ተማሪ አልተገኘም።", 'error');
+                return;
+            }
+            
+            let formContent = `
+                <form id="edit-student-form" class="space-y-4">
+                    <div>
+                        <label for="edit-student-name" class="block text-sm font-medium text-gray-700 mb-2">የተማሪ ስም</label>
+                        <input type="text" id="edit-student-name" value="${student.name}" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div class="space-y-3 max-h-72 overflow-y-auto p-2 border rounded-lg bg-gray-50">
+                        <h4 class="font-semibold text-gray-800 border-b pb-2 sticky top-0 bg-gray-50/90 z-10">ነጥቦችን አርትዕ (0-100)</h4>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+            `;
+
+            departments.forEach(dept => {
+                const score = student.scores[dept.id] !== undefined ? student.scores[dept.id] : 0;
+                formContent += `
+                    <div class="col-span-1">
+                        <label for="edit-score-${dept.id}" class="text-sm font-medium text-gray-500 truncate">${dept.name}</label>
+                        <input type="number" id="edit-score-${dept.id}" name="${dept.id}" value="${score}" min="0" max="100"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500">
+                    </div>
+                `;
+            });
+
+            formContent += `
+                        </div>
+                    </div>
+                    <input type="hidden" id="edit-student-id" value="${studentId}">
+                </form>
+            `;
+
+            // Update modal content
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalActions = document.getElementById('modal-actions');
+            
+            modalTitle.textContent = `ተማሪ አርትዕ: ${student.name}`;
+            modalContent.innerHTML = formContent;
+            
+            modalActions.innerHTML = `
+                <button onclick="hideModal()" class="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition border border-gray-300">
+                    cancel
+                </button>
+                <button onclick="saveStudentEdit()" class="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition border border-green-600">
+                  save
+                </button>
+            `;
+
+            // Show modal
+            const modal = document.getElementById('confirmation-modal');
+            modal.classList.remove('hidden');
+        }
+
+        // SAVE STUDENT EDIT FUNCTION
+        function saveStudentEdit() {
+            const studentId = document.getElementById('edit-student-id').value;
+            const nameInput = document.getElementById('edit-student-name');
+            
+            if (!nameInput.value.trim()) {
+                showMessage("የተማሪ ስም ባዶ ሊሆን አይችልም።", 'error');
+                return;
+            }
+
+            const newName = nameInput.value.trim();
+            const newScores = {};
+            let isValid = true;
+
+            departments.forEach(dept => {
+                const input = document.getElementById(`edit-score-${dept.id}`);
+                const score = input.value === '' ? 0 : parseInt(input.value);
+
+                if (score < 0 || score > 100) {
+                    showMessage(`ለ ${dept.name} የማይገባ ነጥብ። ከ 0 እስከ 100 መሆን አለበት።`, 'error');
+                    isValid = false;
+                }
+                newScores[dept.id] = score;
+            });
+
+            if (isValid) {
+                updateStudentMarks(studentId, newName, newScores);
+                hideModal();
+            }
+        }
+
+        // Leaderboard Functions - Updated for 3 statuses
+        function calculateStatsAndRank(studentsToRank) {
+            const studentsWithStats = studentsToRank.map(student => {
+                let totalScore = 0;
+                let hasAnyScore = false;
+                let allZero = true;
+                let validDepartmentCount = 0;
+
+                departments.forEach(dept => {
+                    const score = student.scores[dept.id] !== undefined ? student.scores[dept.id] : 0; 
+                    totalScore += score;
+                    validDepartmentCount++;
+                    
+                    if (score !== undefined && score > 0) {
+                        hasAnyScore = true;
+                        allZero = false;
+                    }
+                });
+
+                const average = validDepartmentCount > 0 ? totalScore / validDepartmentCount : 0;
+                
+                // Determine status
+                let status = 'not-study';
+                let statusText = 'ምንም አልተማረም';
+                let statusClass = 'bg-gray-100 text-gray-800 border-gray-200';
+                
+                if (hasAnyScore && !allZero) {
+                    if (average >= 50) {
+                        status = 'pass';
+                        statusText = 'የተማረ';
+                        statusClass = 'bg-green-100 text-green-800 border-green-200';
+                    } else {
+                        status = 'fail';
+                        statusText = 'ያልተማረ';
+                        statusClass = 'bg-red-100 text-red-800 border-red-200';
+                    }
+                }
+                
+                return { 
+                    ...student, 
+                    average: average, 
+                    totalScore: totalScore, 
+                    status: status,
+                    statusText: statusText,
+                    statusClass: statusClass,
+                    hasScores: hasAnyScore && !allZero
+                };
+            });
+
+            // Sort only students who have scores
+            const studentsWithScores = studentsWithStats.filter(s => s.hasScores);
+            const studentsWithoutScores = studentsWithStats.filter(s => !s.hasScores);
+            
+            studentsWithScores.sort((a, b) => b.average - a.average);
+
+            // Assign ranks to students with scores
+            let currentRank = 1;
+            for (let i = 0; i < studentsWithScores.length; i++) {
+                const student = studentsWithScores[i];
+                if (i > 0 && student.average < studentsWithScores[i - 1].average) {
+                    currentRank = i + 1;
+                }
+                student.rank = currentRank;
+            }
+
+            // Combine back with students without scores
+            const allStudents = [...studentsWithScores, ...studentsWithoutScores];
+            
+            // For students without scores, show "-" for rank
+            studentsWithoutScores.forEach(student => {
+                student.rank = '-';
+            });
+
+            return allStudents;
+        }
+
+        function renderLeaderboard() {
+            const leaderboardContainer = document.getElementById('leaderboard-container');
+            const filteredStudents = filterStudents();
+            
+            // Update Excel button
+            const excelBtn = document.getElementById('excel-download-btn');
+            if (excelBtn) {
+                excelBtn.innerHTML = `Excel  (${filteredStudents.length} ተማሪዎች)`;
+            }
+
+            if (departments.length === 0) {
+                leaderboardContainer.innerHTML = `
+                    <div class="text-center py-12 text-gray-600">
+                        <div class="text-6xl mb-4"></div>
+                        <p class="text-xl font-bold">ምንም ትምህርት አልተጨመረም!</p>
+                        <p class="text-sm mt-2">ለመጀመር በኮንፊግሬሽን ትምህርቶችን ያክሉ።</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (filteredStudents.length === 0) {
+                if (isSearching) {
+                    leaderboardContainer.innerHTML = `
+                        <div class="text-center py-12 text-gray-500">
+                            <div class="text-6xl mb-4"></div>
+                            <p class="text-xl">ምንም ተማሪ አልተገኘም</p>
+                            <p class="text-sm mt-2">"<span class="text-blue-600 font-semibold">${searchQuery}</span>" ለሚለው ፍለጋ ውጤት አልተገኘም</p>
+                            <button onclick="clearSearch()" 
+                                class="mt-4 bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200">
+                                ፍለጋ አጽዳ
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    leaderboardContainer.innerHTML = `
+                        <div class="text-center py-12 text-gray-500">
+                            <div class="text-6xl mb-4"></div>
+                            <p class="text-xl">ምንም ተማሪ አልተገኘም</p>
+                            <p class="text-sm mt-2">ተማሪዎች በራስሰር ተጨምረዋል። ገጹን ይድገሙት።</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            const rankedStudents = calculateStatsAndRank(filteredStudents);
+            
+            // Generate header with gender icons
+            let headerHtml = `<div class="text-center">#</div>
+                              <div class="col-span-2 flex items-center">ስም</div>`;
+            departments.forEach(dept => {
+                headerHtml += `<div class="text-center truncate">${dept.name}</div>`;
+            });
+            headerHtml += `<div class="text-center">ጠቅላላ</div>
+                           <div class="text-center">አማካይ</div>
+                           <div class="text-center">ሁኔታ</div>
+                           <div class="text-center">ደረጃ</div>
+                           <div class="text-center">ድርጊቶች</div>`;
+
+            const gridTemplateColumns = `0.5fr 2.5fr ${'1fr '.repeat(departments.length)} 1fr 1fr 0.8fr 0.5fr 1fr`;
+
+            let html = `
+                <div style="grid-template-columns: ${gridTemplateColumns};" 
+                     class="grid gap-4 px-4 py-3 text-sm font-semibold text-gray-700 border-b bg-gray-50">
+                    ${headerHtml}
+                </div>
+            `;
+            
+            rankedStudents.forEach((student, index) => {
+                const rankClass = student.rank === 1 ? 'rank-1' :
+                                  student.rank === 2 ? 'rank-2' :
+                                  student.rank === 3 ? 'rank-3' : 'bg-white hover:bg-gray-50';
+                
+                const medal = student.rank === 1 ? '1' :
+                              student.rank === 2 ? '2' :
+                              student.rank === 3 ? '3' : student.rank;
+
+                // Highlight search term
+                let highlightedName = student.name;
+                if (searchQuery) {
+                    const regex = new RegExp(`(${searchQuery})`, 'gi');
+                    highlightedName = student.name.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+                }
+
+                // Gender icon
+                const genderIcon = student.gender === 'female' ? '👩‍🎓' : '👨‍🎓';
+
+                let scoreCells = '';
+                departments.forEach(dept => {
+                    const score = student.scores[dept.id] !== undefined ? student.scores[dept.id] : '-';
+                    scoreCells += `<div class="text-center text-gray-700 font-medium">${score}${score !== '-' ? '%' : ''}</div>`;
+                });
+
+                html += `
+                    <div style="grid-template-columns: ${gridTemplateColumns};" 
+                         class="grid gap-4 px-4 py-3 items-center rounded-lg border ${rankClass} transform hover:scale-[1.01] transition-all duration-200">
+                        <div class="col-span-1 text-center font-medium text-gray-500">${index + 1}</div>
+                        <div class="col-span-2 font-semibold text-gray-800 truncate cursor-pointer hover:underline flex items-center gap-2" 
+                             onclick="showEditStudentModal('${student.id}')"
+                             title="ለማርትዕ ይጫኑ">
+                            <span class="text-lg">${genderIcon}</span>
+                            <span>${highlightedName}</span>
+                        </div>
+                        ${scoreCells}
+                        <div class="text-center font-bold text-lg text-gray-800">${student.hasScores ? student.totalScore : '-'}</div>
+                        <div class="text-center font-bold text-lg text-gray-800">${student.hasScores ? student.average.toFixed(1) + '%' : '-'}</div>
+                        <div class="text-center">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full border ${student.statusClass}">
+                                ${student.statusText}
+                            </span>
+                        </div>
+                        <div class="col-span-1 text-center font-bold text-lg">${medal}</div>
+                        <div class="text-center">
+                            <button onclick="showConfirmationModal('እርግጠኛ ነህ ተማሪ ${student.name} ን መደለት ትፈልጋለህ?', () => deleteStudent('${student.id}'))" class="text-gray-500 hover:text-red-600 transition">
+                                delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            leaderboardContainer.innerHTML = html;
+            updateSearchResultsCount();
+            updateStudentStats();
+        }
+
+        // Configuration View
+        function renderConfigView() {
+            const configDepartmentsList = document.getElementById('config-departments-list');
+            configDepartmentsList.innerHTML = ''; 
+
+            if (departments.length === 0) {
+                configDepartmentsList.innerHTML = `<div class="text-center py-6 text-gray-500">እስካሁን ምንም ትምህርት አልተጨመረም።</div>`;
+            }
+
+            departments.forEach(dept => {
+                const deptElement = document.createElement('div');
+                deptElement.className = 'flex justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200';
+                deptElement.innerHTML = `
+                    <div class="flex-grow">
+                        <span id="dept-name-${dept.id}" class="text-lg font-semibold text-gray-800">${dept.name}</span>
+                        <input type="text" id="dept-input-${dept.id}" value="${dept.name}" 
+                            class="hidden w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                            placeholder="አዲስ ትምህርት ስም">
+                    </div>
+                    <div id="dept-actions-${dept.id}" class="space-x-2 flex">
+                        <button onclick="toggleEditMode('${dept.id}')" 
+                            class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg transition font-medium border border-blue-200 hover:border-blue-300">
+                            edit
+                        </button>
+                        <button onclick="showConfirmationModal('ትምህርት ${dept.name} ን መደለት ትፈልጋለህ?', () => deleteDepartment('${dept.id}'))" 
+                            class="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg transition font-medium border border-red-200 hover:border-red-300">
+                            delete
+                        </button>
+                    </div>
+                `;
+                configDepartmentsList.appendChild(deptElement);
+            });
+        }
+
+        function toggleEditMode(departmentId) {
+            const nameDisplay = document.getElementById(`dept-name-${departmentId}`);
+            const inputEdit = document.getElementById(`dept-input-${departmentId}`);
+            const actionsContainer = document.getElementById(`dept-actions-${departmentId}`);
+
+            const isEditing = nameDisplay.classList.contains('hidden');
+
+            if (isEditing) {
+                const newName = inputEdit.value.trim();
+                if (newName && newName !== nameDisplay.textContent) {
+                    editDepartment(departmentId, newName);
+                }
+                nameDisplay.classList.remove('hidden');
+                inputEdit.classList.add('hidden');
+                actionsContainer.innerHTML = `
+                    <button onclick="toggleEditMode('${departmentId}')" class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg transition font-medium border border-blue-200 hover:border-blue-300">አርትዕ</button>
+                    <button onclick="showConfirmationModal('ትምህርት ${nameDisplay.textContent} ን መደለት ትፈልጋለህ?', () => deleteDepartment('${departmentId}'))" class="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg transition font-medium border border-red-200 hover:border-red-300">ሰርዝ</button>
+                `;
+            } else {
+                nameDisplay.classList.add('hidden');
+                inputEdit.classList.remove('hidden');
+                actionsContainer.innerHTML = `
+                    <button onclick="toggleEditMode('${departmentId}')" class="bg-green-600 text-white px-3 py-1 rounded-lg transition font-medium hover:bg-green-700 border border-green-600">አስቀምጥ</button>
+                    <button onclick="toggleEditMode('${departmentId}')" class="text-gray-600 hover:text-gray-800 px-3 py-1 rounded-lg transition font-medium border border-gray-300 hover:border-gray-400">ይቅር</button>
+                `;
+                inputEdit.focus();
+            }
+        }
+
+        function editDepartment(departmentId, newName) {
+            const departmentIndex = departments.findIndex(d => d.id === departmentId);
+            if (departmentIndex !== -1) {
+                departments[departmentIndex].name = newName;
+                saveToLocalStorage();
+                showMessage(`ትምህርት ወደ "${newName}" ተሻሽሏል።`, 'success');
+                renderConfigView();
+                renderLeaderboard();
+            }
+        }
+
+        function addDepartment(name) {
+            if (departments.some(d => d.name.toLowerCase() === name.toLowerCase())) {
+                showMessage("ይህ ትምህርት አስቀድሞ አለ!", 'error');
+                return;
+            }
+
+            const newDepartment = {
+                id: Date.now().toString(),
+                name: name
+            };
+            
+            departments.push(newDepartment);
+            saveToLocalStorage();
+            showMessage(`ትምህርት "${name}" ተጨምሯል!`, 'success');
+            document.getElementById('new-department-name').value = '';
+            renderConfigView();
+            renderLeaderboard();
+        }
+
+        function deleteDepartment(departmentId) {
+            const departmentIndex = departments.findIndex(d => d.id === departmentId);
+            if (departmentIndex !== -1) {
+                const departmentName = departments[departmentIndex].name;
+                departments.splice(departmentIndex, 1);
+                saveToLocalStorage();
+                showMessage(`ትምህርት "${departmentName}" ተሰርዟል።`, 'success');
+                renderConfigView();
+                renderLeaderboard();
+            }
+        }
+
+        // Excel Export
+        function exportToExcel() {
+            const filteredStudents = filterStudents();
+            
+            if (filteredStudents.length === 0) {
+                showMessage("ምንም የተማሪ ውጤት የለም።", 'error');
+                return;
+            }
+            
+            const rankedStudents = calculateStatsAndRank(filteredStudents);
+            
+            const excelData = [];
+            
+            // Headers
+            const headers = ['ተ.ቁ', 'ስም', 'ጾታ', ...departments.map(d => d.name), 'ጠቅላላ ነጥብ', 'አማካይ', 'ሁኔታ', 'ደረጃ'];
+            excelData.push(headers);
+            
+            // Student data
+            rankedStudents.forEach((student, index) => {
+                const row = [
+                    index + 1,
+                    student.name,
+                    student.gender === 'male' ? 'ወንድ' : 'ሴት',
+                    ...departments.map(dept => student.scores[dept.id] !== undefined ? student.scores[dept.id] : 0),
+                    student.hasScores ? student.totalScore : 0,
+                    student.hasScores ? student.average.toFixed(2) : 0,
+                    student.statusText,
+                    student.rank
+                ];
+                excelData.push(row);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, `ተማሪዎች`);
+            XLSX.writeFile(wb, `የተማሪ_ውጤት_ማስወጣት.xlsx`);
+            
+            showMessage(`${rankedStudents.length} ተማሪዎች በተሳካ ሁኔታ ወደ Excel ተላኩ።`, 'success');
+        }
+
+        // UI Functions
+        function showMessage(text, type = 'success') {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = text;
+            messageBox.className = `p-3 rounded-xl mb-4 text-center font-medium shadow-md ${
+                type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'
+            }`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        }
+
+        function showConfirmationModal(message, action) {
+            const modal = document.getElementById('confirmation-modal');
+            const modalContent = document.getElementById('modal-content');
+            const modalActions = document.getElementById('modal-actions');
+            
+            modalContent.innerHTML = `<p class="text-gray-600 mb-6">${message}</p>`;
+            modalActions.innerHTML = `
+                <button onclick="hideModal()" class="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition border border-gray-300">
+                    ይቅር
+                </button>
+                <button onclick="confirmAction()" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition border border-red-600">
+                    አረጋግጥ
+                </button>
+            `;
+            
+            window.confirmAction = function() {
+                action();
+                hideModal();
+            };
+            
+            modal.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('confirmation-modal');
+            modal.classList.add('hidden');
+        }
+
+        function switchView(view) {
+            const dashboardView = document.getElementById('dashboard-view');
+            const configView = document.getElementById('config-view');
+            const dashboardBtn = document.getElementById('dashboard-btn');
+            const configBtn = document.getElementById('config-btn');
+            
+            if (view === 'config') {
+                dashboardView.classList.add('hidden');
+                configView.classList.remove('hidden');
+                dashboardBtn.classList.remove('bg-blue-600', 'text-white');
+                dashboardBtn.classList.add('bg-gray-200', 'text-gray-700');
+                configBtn.classList.add('bg-blue-600', 'text-white');
+                configBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                renderConfigView();
+            } else {
+                configView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                configBtn.classList.remove('bg-blue-600', 'text-white');
+                configBtn.classList.add('bg-gray-200', 'text-gray-700');
+                dashboardBtn.classList.add('bg-blue-600', 'text-white');
+                dashboardBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                renderLeaderboard();
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Add department form
+            document.getElementById('add-department-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('new-department-name').value.trim();
+                if (name) {
+                    addDepartment(name);
+                } else {
+                    showMessage("የትምህርት ስም ባዶ ሊሆን አይችልም።", 'error');
+                }
+            });
+        });
+
+        // Global functions
+        window.switchView = switchView;
+        window.handleSearch = handleSearch;
+        window.clearSearch = clearSearch;
+        window.toggleEditMode = toggleEditMode;
+        window.deleteAllStudents = deleteAllStudents;
+        window.deleteStudent = deleteStudent;
+        window.exportToExcel = exportToExcel;
+        window.hideModal = hideModal;
+        window.showConfirmationModal = showConfirmationModal;
+        window.showEditStudentModal = showEditStudentModal;
+        window.saveStudentEdit = saveStudentEdit;
+
+    </script>
+    <style>
+        .rank-1 { background: linear-gradient(135deg, #fef3c7, #fef7cd); border: 2px solid #f59e0b; }
+        .rank-2 { background: linear-gradient(135deg, #e5e7eb, #f3f4f6); border: 2px solid #6b7280; }
+        .rank-3 { background: linear-gradient(135deg, #fcd34d, #fed7aa); border: 2px solid #d97706; }
+        mark { background-color: #fef3c7; padding: 0 2px; border-radius: 2px; }
+    </style>
+</head>
+<body class="min-h-screen py-8 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">የ ፈለገ ህይወት ሰንበት ትምርት ቤት</h1>
+            <p class="text-gray-600 mb-4">የ ተማሪ ማርክ መሙያ</p>
+
+            <!-- Navigation -->
+            <div class="inline-flex rounded-lg bg-gray-100 p-1 border border-gray-200">
+                <button id="dashboard-btn" onclick="switchView('dashboard')"
+                    class="px-6 py-2 rounded-lg font-semibold transition-all duration-300 bg-blue-600 text-white">
+                    📊 Home
+                </button>
+                <button id="config-btn" onclick="switchView('config')"
+                    class="px-6 py-2 rounded-lg font-semibold transition-all duration-300 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    ⚙️ Setting
+                </button>
+            </div>
+        </div>
+        
+        <!-- Message Box -->
+        <div id="message-box" style="display: none;" class="max-w-4xl mx-auto"></div>
+
+        <!-- Main Dashboard -->
+        <div id="dashboard-view">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column - Student Information -->
+                <div class="space-y-8">
+                    <!-- Student Stats Card -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">የተማሪ መረጃ</h2>
+                        <div id="student-stats-container">
+                            <!-- Stats will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Delete All -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <button onclick="deleteAllStudents()" class="w-full bg-red-600 text-white py-4 rounded-lg font-semibold hover:bg-red-700 transition-all">
+                            የተማሪ ዝርዝር ለማጥፋት
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">ማርክ ሊስት</h2>
+                            <button id="excel-download-btn" onclick="exportToExcel()" class="bg-green-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-700 transition-all">
+                                📥 Excel
+                            </button>
+                        </div>
+
+                        <!-- Search will be inserted here -->
+                        <div id="leaderboard-container">
+                            <!-- Leaderboard content -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration View -->
+        <div id="config-view" class="hidden">
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">ትምርት መጨመርያ</h2>
+                
+                <!-- Add Department -->
+                <div class="mb-8 p-5 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">ትምርት ለመጨመር</h3>
+                    <form id="add-department-form" class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                        <input type="text" id="new-department-name" required class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="የትምህርት ስም">
+                        <button type="submit" class="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                            ጨምር
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Department List -->
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">ያሉ ትምርትቶች</h3>
+                <div id="config-departments-list" class="space-y-3">
+                    <!-- Departments will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md shadow-lg border border-gray-200">
+            <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+            <div id="modal-content" class="mb-6"></div>
+            <div id="modal-actions" class="flex justify-end space-x-4"></div>
+        </div>
+</body>
+</html>
